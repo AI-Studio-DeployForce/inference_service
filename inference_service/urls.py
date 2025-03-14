@@ -17,6 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from rest_app.views.api_views import health_check, predict, model_info
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/health/", health_check, name="health"),
+    path("api/predict/", predict, name="predict"),
+    path("api/model-info/", model_info, name="model-info"),
 ]
