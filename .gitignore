@@ -36,3 +36,5 @@ staticfiles/
 
 # Ignore Docker files
 docker-compose.override.yml
+
+models/*
