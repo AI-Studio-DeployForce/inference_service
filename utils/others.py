@@ -43,7 +43,7 @@ def split_filename_and_extension(filename: str) -> tuple[str, str]:
 
 def count_building_clusters(mask) -> dict:
     """
-    Count connected building‐damage clusters in a four‐class mask.
+    Count connected building‐damage clusters in a four‐class mask and measure their areas.
 
     Args:
         mask : numpy array 1024×1024 where:
@@ -57,22 +57,27 @@ def count_building_clusters(mask) -> dict:
             "num_no_damage": int,
             "num_minor_damage": int,
             "num_major_damage": int,
-            "num_destroyed": int
+            "num_destroyed": int,
+            "areas": [
+                {"class": str, "area": int, "cluster_id": int},
+                ...
+            ]
         }
     """
 
     # define classes and output keys
     classes = {
-        0: {"bgr": (0, 255, 0),    "key": "num_no_damage"},
-        1: {"bgr": (0, 255, 255),  "key": "num_minor_damage"},
-        2: {"bgr": (0, 165, 255),  "key": "num_major_damage"},
-        3: {"bgr": (0, 0, 255),    "key": "num_destroyed"},
+        0: {"bgr": (0, 255, 0),    "key": "num_no_damage", "name": "no_damage"},
+        1: {"bgr": (0, 255, 255),  "key": "num_minor_damage", "name": "minor_damage"},
+        2: {"bgr": (0, 165, 255),  "key": "num_major_damage", "name": "major_damage"},
+        3: {"bgr": (0, 0, 255),    "key": "num_destroyed", "name": "destroyed"},
     }
 
     # structuring element for morphological opening
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
     stats = {}
+    areas = []
     # Create a visualization for the cleaned masks
     cleaned_vis = np.zeros_like(mask)
     
@@ -91,8 +96,20 @@ def count_building_clusters(mask) -> dict:
         colored_mask[cleaned > 0] = color
         cleaned_vis = cv2.add(cleaned_vis, colored_mask)
         
-        # count 8-connected components (subtract background)
-        num_labels, _ = cv2.connectedComponents(cleaned, connectivity=8)
+        # count 8-connected components with stats
+        num_labels, labels, stats_output, _ = cv2.connectedComponentsWithStats(cleaned, connectivity=8)
+        
+        # Skip background (label 0)
+        for i in range(1, num_labels):
+            # Get area (number of pixels) for this cluster
+            area = stats_output[i, cv2.CC_STAT_AREA]
+            # Add to areas list
+            areas.append({
+                "class": info["name"],
+                "area": int(area),
+                "cluster_id": i
+            })
+        
         stats[info["key"]] = num_labels - 1
     
     # Display the visualization
@@ -100,4 +117,7 @@ def count_building_clusters(mask) -> dict:
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
+    # Add areas to the stats dictionary
+    stats["areas"] = areas
+    
     return stats
