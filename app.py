@@ -3,7 +3,7 @@ import os
 import cv2
 from utils.perform_inference import DamageSegmentationPipeline, Config
 from pathlib import Path
-from utils.others import download_image, save_and_upload_mask, split_filename_and_extension
+from utils.others import download_image, save_and_upload_mask, split_filename_and_extension, count_building_clusters
 # from flask_ngrok import run_with_ngrok
 
 app = Flask(__name__)
@@ -55,12 +55,7 @@ def predict():
 
             # For damage masks, return stats (dummy for now)
             if mask_type == "damage_severity_mask":
-                stats = {
-                    "num_no_damage": 5,
-                    "num_minor_damage": 10,
-                    "num_major_damage": 3,
-                    "num_destroyed": 2
-                }
+                stats = count_building_clusters(processed_mask)
                 damage_severities.append(stats)
 
             os.remove(image_path)

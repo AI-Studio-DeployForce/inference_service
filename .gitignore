@@ -38,3 +38,5 @@ staticfiles/
 docker-compose.override.yml
 
 models/*
+
+inference/*
