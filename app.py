@@ -8,6 +8,11 @@ from utils.others import download_image, save_and_upload_mask, split_filename_an
 
 app = Flask(__name__)
 
+@app.get("/")
+def index():
+    return jsonify(status="ok",
+                   message="DeployForce inference service is running 🚀"), 200
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
