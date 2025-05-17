@@ -12,8 +12,17 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 2. copy the rest of the source tree (models, utils, app.py, etc.)
+# 2. copy the .env file first
+COPY .env .
+
+# 3. copy the clearml.conf to the correct location
+COPY clearml.conf /root/clearml.conf
+
+# 4. copy the rest of the source code
 COPY . .
+
+# 5. Download the model weights during build
+RUN python utils/download_weights.py
 
 # Ports & env
 ENV FLASK_APP=app.py \
