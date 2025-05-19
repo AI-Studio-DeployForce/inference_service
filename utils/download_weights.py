@@ -21,6 +21,7 @@ def download_weights():
         print("No new weights")
         return
 
+    
     # Download weights if new_weight is True
     models = Model.query_models(
         model_name="YOLOv9_BuildingDamage_Segmentation",
@@ -40,6 +41,11 @@ def download_weights():
 
     # Use the new filename
     destination_path = os.path.join(destination_folder, "best_256_new.pt")
+
+    # Delete old weights if they exist
+    if os.path.exists(destination_path):
+        os.remove(destination_path)
+        print("Deleted old weights")
 
     # Copy the model file to the new location with the new name
     shutil.copy(model_path, destination_path)
